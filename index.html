@@ -528,12 +528,13 @@ h2{font-size:clamp(1.65rem,4vw,3.2rem);font-weight:800;letter-spacing:-.025em;li
   'use strict';
 
   /* ============================================================
-     PAYMENT LINK — paste your payment gateway URL between the
-     quotes (Razorpay / PayU / Instamojo page link).
-     Every "Register" button on the page will point to it.
+     REGISTER LINK — where every "Register" button goes.
+     Points at the registration page, which posts answers into
+     the Google Form. Swap for a payment gateway URL if you
+     ever move to paying up front.
      Leave it empty and the buttons just scroll to the ₹299 pass.
      ============================================================ */
-  var PAYMENT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScvJ3Zj9nx8uipAJnvnChcUmcWeo2V6RtDgcqIwzLdClNhDHg/viewform?utm_source=ig&utm_medium=social&utm_content=link_in_bio';
+  var PAYMENT_URL = 'register.html';
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var canReveal = 'IntersectionObserver' in window;
