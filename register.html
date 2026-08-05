@@ -7,7 +7,6 @@
 <meta name="description" content="Register your pet for the Dog's World India Independence Day Pet Parade, 15 August 2026. ₹299 per pet." />
 <link rel="icon" href="assets/logo.png" />
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <style>
 /* ============================================================
@@ -175,9 +174,42 @@ fieldset.bad .hint{display:block}
 .price-strip small{opacity:.85;font-size:.85rem;display:block}
 .price-strip .upi{font-size:.85rem;opacity:.9;text-align:right}
 
-/* ---------- Razorpay pay block ---------- */
+/* ---------- Manual UPI pay block ---------- */
 .pay-block{text-align:center}
 .pay-block .btn-pay{width:100%;max-width:340px;padding:1.05rem 1.9rem;font-size:1.05rem}
+
+.upi-card{
+  display:flex;gap:1.3rem;align-items:center;text-align:left;flex-wrap:wrap;
+  border:1px solid var(--line);border-radius:18px;padding:1.15rem;background:#fff;
+}
+.upi-card .qr{
+  flex:0 0 auto;width:172px;height:172px;border-radius:14px;border:1px solid var(--line);
+  padding:.5rem;background:#fff;object-fit:contain;
+}
+.upi-card .qr-side{flex:1 1 210px;min-width:0}
+.upi-card h3{font-size:1rem;font-weight:700}
+.upi-card .qr-hint{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+
+.upi-id-row{
+  display:flex;align-items:center;gap:.5rem;margin-top:.85rem;
+  border:1px dashed var(--line);border-radius:12px;padding:.55rem .7rem;background:var(--blue-soft);
+}
+.upi-id-row code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem;font-weight:600;
+  color:var(--ink);flex:1;min-width:0;overflow-wrap:anywhere;
+}
+.copy-btn{
+  flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:100px;
+  font:inherit;font-size:.78rem;font-weight:600;color:var(--blue);padding:.3rem .8rem;cursor:pointer;
+}
+@media (hover:hover){.copy-btn:hover{border-color:var(--blue)}}
+
+.pay-amount{
+  display:inline-flex;align-items:baseline;gap:.35rem;margin-top:.2rem;
+  font-weight:700;font-size:1.05rem;
+}
+.pay-amount small{font-weight:500;font-size:.8rem;color:var(--muted)}
+
 .pay-methods{
   display:flex;align-items:center;justify-content:center;gap:.55rem;flex-wrap:wrap;
   margin-top:.9rem;font-size:.8rem;color:var(--muted);font-weight:500;
@@ -187,6 +219,23 @@ fieldset.bad .hint{display:block}
 }
 .pay-secure{margin-top:.85rem;font-size:.78rem;color:var(--muted)}
 .pay-secure b{color:var(--ink);font-weight:600}
+
+/* reference-number step */
+.ref-box{
+  margin-top:1.15rem;text-align:left;border-top:1px solid var(--line);padding-top:1.15rem;
+}
+.ref-box .cap{display:block;font-size:.82rem;font-weight:600;margin-bottom:.35rem}
+.ref-box .cap .req{color:var(--orange)}
+.ref-box .ref-hint{font-size:.78rem;color:var(--muted);margin-top:.45rem}
+.ref-row{display:flex;gap:.6rem;flex-wrap:wrap}
+.ref-row input{
+  flex:1 1 200px;min-width:0;padding:.85rem 1rem;border:1px solid var(--line);border-radius:14px;
+  font:inherit;font-size:.95rem;background:#fff;color:var(--ink);
+  transition:border-color .25s,box-shadow .25s;
+}
+.ref-row input:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,79,196,.12)}
+.ref-row input.err{border-color:var(--orange);box-shadow:0 0 0 3px rgba(240,57,11,.12)}
+.ref-row .btn{flex:0 0 auto;padding:.85rem 1.5rem;font-size:.95rem}
 
 .pay-later{
   margin-top:1.15rem;background:none;border:0;font:inherit;font-size:.85rem;
@@ -210,7 +259,8 @@ fieldset.bad .hint{display:block}
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;
   background:var(--line);border-radius:6px;padding:.1rem .4rem;
 }
-.pay-state.paid{border-color:rgba(18,138,62,.35);background:rgba(18,138,62,.05)}
+.pay-state.pending{border-color:rgba(240,57,11,.32);background:var(--orange-soft)}
+.pay-state.pending .mark{background:var(--orange);font-size:1rem}
 .pay-state.later{border-color:rgba(27,79,196,.3);background:var(--blue-soft)}
 .pay-state.later .mark{background:var(--blue)}
 .pay-state .redo{
@@ -402,27 +452,48 @@ fieldset.bad .hint{display:block}
         </div>
 
         <input type="hidden" name="paid" id="paidField" value="" />
-        <input type="hidden" name="paymentId" id="paymentIdField" value="" />
+        <input type="hidden" name="method" id="methodField" value="" />
+        <input type="hidden" name="txnRef" id="txnRefField" value="" />
 
         <div class="pay-block" id="payBlock">
-          <button type="button" class="btn btn-primary btn-pay" id="payBtn">
-            <span class="spin"></span><span id="payLabel">Pay ₹299 securely</span>
-          </button>
-          <div class="pay-methods">
-            <span>UPI</span><span>GPay</span><span>PhonePe</span><span>Paytm</span>
-            <span>Cards</span><span>Netbanking</span><span>Wallets</span>
+          <div class="upi-card" id="upiCard">
+            <img class="qr" id="upiQr" src="assets/upi-qr.png" alt="UPI QR code to pay ₹299 to Dog's World India" />
+            <div class="qr-side">
+              <h3>Scan &amp; pay with any UPI app</h3>
+              <p class="qr-hint">GPay · PhonePe · Paytm · BHIM · your bank app</p>
+              <div class="upi-id-row">
+                <code id="upiIdText">—</code>
+                <button type="button" class="copy-btn" id="copyUpi">Copy</button>
+              </div>
+              <p class="pay-amount"><span id="upiAmount">₹299</span><small>exact amount, please</small></p>
+            </div>
           </div>
-          <p class="pay-secure">Payments handled by <b>Razorpay</b>. We never see your card or UPI details.</p>
-          <p class="pay-error" id="payError"></p>
+
+          <div class="pay-methods" id="upiAppRow" style="margin-top:1.1rem">
+            <a class="btn btn-primary btn-pay" id="upiIntent" href="#" style="text-decoration:none">Open UPI App and Pay ₹299</a>
+          </div>
+          <p class="pay-secure" id="upiDesktopHint">On a laptop? Scan the QR with your phone instead.</p>
+
+          <div class="ref-box">
+            <label class="cap" for="refInput">Paid? Enter your UPI transaction / reference number <span class="req">*</span></label>
+            <div class="ref-row">
+              <input type="text" id="refInput" inputmode="latin" autocomplete="off"
+                     placeholder="e.g. 412345678901" maxlength="35" />
+              <button type="button" class="btn btn-primary" id="refSubmit">Submit</button>
+            </div>
+            <p class="ref-hint">Your UPI app shows this as <b>UPI transaction ID</b>, <b>UTR</b> or <b>reference number</b> on the success screen. We check it against our account before confirming your spot.</p>
+            <p class="pay-error" id="payError"></p>
+          </div>
+
           <button type="button" class="pay-later" id="payLaterBtn">I'll pay at the venue instead</button>
         </div>
 
         <div class="pay-state" id="payState">
           <div class="mark" id="payStateMark">✓</div>
           <div>
-            <h3 id="payStateTitle">Payment received</h3>
+            <h3 id="payStateTitle">Payment submitted — verification pending</h3>
             <p id="payStateNote"></p>
-            <button type="button" class="redo" id="payRedo">Pay online now</button>
+            <button type="button" class="redo" id="payRedo">Pay by UPI instead</button>
           </div>
         </div>
       </div>
@@ -443,7 +514,7 @@ fieldset.bad .hint{display:block}
       <div class="pane" data-pane="5">
         <div class="done-wrap">
           <div class="done-mark">✓</div>
-          <h2>You're on the list!</h2>
+          <h2 id="doneHead">You're on the list!</h2>
           <p id="doneLine">See you on 15 August at Dr. Kashinath Ghanekar Natyagruha, 7:30 AM.</p>
           <dl class="receipt" id="receipt"></dl>
           <p class="done-note" id="doneNote">We'll send the details to your mobile number closer to the day.</p>
@@ -502,26 +573,44 @@ fieldset.bad .hint{display:block}
     city:    'entry.838219199',
     source:  'entry.1102715980',
     before:  'entry.60262619',
-    email:     '',  /* ← paste the Email question's entry ID here */
-    paymentId: ''   /* ← optional: add a "Payment ID" question and paste it here */
+    /* The form has no questions for these yet. Add them as short
+       answer questions, then paste their entry IDs here and the
+       answers start landing in the responses sheet:
+         "Email"                          → email
+         "Payment method"                 → method
+         "UPI transaction reference"      → txnRef                */
+    email:  '',
+    method: '',
+    txnRef: ''
   };
 
   /* ============================================================
-     RAZORPAY
+     MANUAL UPI PAYMENT  (temporary — replaces Razorpay checkout)
 
-     The ₹299 amount and the payment check both live on the
-     server (/api/order and /api/verify) — this page never
-     handles the key secret, and a paid state it did not earn
-     cannot be faked.
+     Money goes straight to the partnership merchant UPI account.
+     Nothing here can confirm a payment, so the page never claims
+     one: it collects the transaction reference and says
+     "verification pending" until someone checks the account.
+
+     The Razorpay route is parked, not deleted — api/order.js and
+     api/verify.js are still in the repo. See the README to switch
+     back.
+
+     Set these three, and drop the QR image at assets/upi-qr.png:
      ============================================================ */
-  var ORDER_URL  = '/api/order';
-  var VERIFY_URL = '/api/verify';
+  var UPI_ID   = '';                        /* ← merchant UPI id, e.g. name@okhdfcbank */
+  var UPI_NAME = "Dog's World India";       /* name shown in the payer's UPI app */
+  var UPI_QR   = 'assets/upi-qr.png';       /* ← merchant QR image */
+
+  var AMOUNT      = '299.00';
+  var AMOUNT_TEXT = '₹299';
+  var UPI_NOTE    = 'Pet Parade 2026';
 
   var COPY = [
     null,
     { t: 'Your details',  s: "So we know who's walking with us on the day." },
     { t: 'Your pet',      s: 'The star of the parade. Tell us about them.' },
-    { t: 'Payment',       s: 'Pay ₹299 for your parade pass.' },
+    { t: 'Payment',       s: 'Pay ₹299 by UPI, then enter your reference number.' },
     { t: 'Almost done',   s: 'Two optional questions, then you\'re in.' }
   ];
 
@@ -600,7 +689,7 @@ fieldset.bad .hint{display:block}
 
     /* step 3 — they must have paid, or have chosen to pay at the venue */
     if (n === 3 && !paidField.value) {
-      showPayError('Please pay ₹299 to hold your spot, or choose to pay at the venue.');
+      showPayError('Please enter your UPI reference number, or choose to pay at the venue.');
       ok = false;
     }
 
@@ -608,10 +697,8 @@ fieldset.bad .hint{display:block}
     return ok;
   }
 
-  /* ---------- payment ---------- */
+  /* ---------- payment (manual UPI) ---------- */
   var payBlock   = document.getElementById('payBlock');
-  var payBtn     = document.getElementById('payBtn');
-  var payLabel   = document.getElementById('payLabel');
   var payLaterBtn= document.getElementById('payLaterBtn');
   var payError   = document.getElementById('payError');
   var payState   = document.getElementById('payState');
@@ -620,7 +707,18 @@ fieldset.bad .hint{display:block}
   var payStateNote  = document.getElementById('payStateNote');
   var payRedo    = document.getElementById('payRedo');
   var paidField  = document.getElementById('paidField');
-  var payIdField = document.getElementById('paymentIdField');
+  var methodField= document.getElementById('methodField');
+  var txnRefField= document.getElementById('txnRefField');
+
+  var upiCard    = document.getElementById('upiCard');
+  var upiQr      = document.getElementById('upiQr');
+  var upiIdText  = document.getElementById('upiIdText');
+  var upiIntent  = document.getElementById('upiIntent');
+  var upiAppRow  = document.getElementById('upiAppRow');
+  var upiDeskHint= document.getElementById('upiDesktopHint');
+  var copyUpi    = document.getElementById('copyUpi');
+  var refInput   = document.getElementById('refInput');
+  var refSubmit  = document.getElementById('refSubmit');
 
   function showPayError(msg) {
     payError.textContent = msg;
@@ -628,158 +726,127 @@ fieldset.bad .hint{display:block}
   }
   function clearPayError() {
     payError.classList.remove('on');
+    refInput.classList.remove('err');
   }
 
-  function busy(on, label) {
-    payBtn.classList.toggle('loading', on);
-    payBtn.disabled = on;
-    payLaterBtn.disabled = on;
-    payLabel.textContent = on ? (label || 'Opening payment…') : 'Pay ₹299 securely';
+  /* ---- build the payment surface from the config above ---- */
+  var upiReady = !!UPI_ID;
+
+  if (upiReady) {
+    upiQr.src = UPI_QR;
+    upiIdText.textContent = UPI_ID;
+    upiIntent.href = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) +
+                     '&pn=' + encodeURIComponent(UPI_NAME) +
+                     '&am=' + AMOUNT +
+                     '&cu=INR' +
+                     '&tn=' + encodeURIComponent(UPI_NOTE);
+    document.getElementById('upiAmount').textContent = AMOUNT_TEXT;
+  } else {
+    /* nothing to pay to yet — don't show a dead QR or a dead button */
+    upiCard.style.display = 'none';
+    upiAppRow.style.display = 'none';
+    upiDeskHint.textContent = 'Online payment is being set up. Please choose "pay at the venue" for now.';
+    refInput.disabled = true;
+    refSubmit.disabled = true;
   }
 
-  function markPaid(paymentId) {
-    paidField.value = 'Yes';
-    payIdField.value = paymentId;
+  /* the QR may simply not be uploaded yet — hide the frame rather
+     than show a broken image */
+  upiQr.addEventListener('error', function () { upiQr.style.display = 'none'; });
+
+  copyUpi.addEventListener('click', function () {
+    if (!upiReady) return;
+    var done = function () {
+      copyUpi.textContent = 'Copied';
+      setTimeout(function () { copyUpi.textContent = 'Copy'; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(UPI_ID).then(done, done);
+    } else {
+      var t = document.createElement('textarea');
+      t.value = UPI_ID; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(t);
+      done();
+    }
+  });
+
+  /* ---- states ---- */
+  function markSubmitted(ref) {
+    paidField.value   = 'Yes';          /* what they tell us */
+    methodField.value = 'UPI';
+    txnRefField.value = ref;
     payBlock.style.display = 'none';
-    payState.className = 'pay-state on paid';
-    payStateMark.textContent = '✓';
-    payStateTitle.textContent = 'Payment received — ₹299';
-    payStateNote.innerHTML = 'Your spot is held. Payment ID <code>' + paymentId + '</code>';
-    payRedo.style.display = 'none';
+    payState.className = 'pay-state on pending';
+    payStateMark.textContent = '⏳';
+    payStateTitle.textContent = 'Payment submitted — verification pending';
+    payStateNote.innerHTML = 'Reference <code>' + ref + '</code> · ' + AMOUNT_TEXT +
+      '. We check every transfer against our account by hand, so your spot is confirmed once that clears.';
+    payRedo.textContent = 'Change the reference number';
+    payRedo.style.display = '';
   }
 
   function markLater() {
-    paidField.value = 'Not yet';
-    payIdField.value = '';
+    paidField.value   = 'Not yet';
+    methodField.value = 'Cash at venue';
+    txnRefField.value = '';
     payBlock.style.display = 'none';
     payState.className = 'pay-state on later';
     payStateMark.textContent = '₹';
     payStateTitle.textContent = 'Paying at the venue';
-    payStateNote.textContent = 'Carry ₹299 on the day. Spots are confirmed on a first-come basis, so paying now is safer.';
-    payRedo.style.display = '';
+    payStateNote.textContent = 'Carry ' + AMOUNT_TEXT + ' on the day. Spots are confirmed on a first-come basis, so paying now is safer.';
+    payRedo.textContent = upiReady ? 'Pay by UPI instead' : 'Back';
+    payRedo.style.display = upiReady ? '' : 'none';
   }
 
   function resetPay() {
     paidField.value = '';
-    payIdField.value = '';
+    methodField.value = '';
+    txnRefField.value = '';
     payState.className = 'pay-state';
     payBlock.style.display = '';
-    busy(false);
     clearPayError();
   }
 
   payLaterBtn.addEventListener('click', function () { clearPayError(); markLater(); });
-  payRedo.addEventListener('click', function () { resetPay(); payBtn.click(); });
+  payRedo.addEventListener('click', function () { resetPay(); refInput.focus(); });
 
-  payBtn.addEventListener('click', function () {
+  /* ---- reference number ---- */
+  function refIsSane(v) {
+    /* UPI ids/UTRs are 12 digits, but banks and apps vary — accept
+       anything that looks like a reference, reject obvious junk. */
+    return /^[A-Za-z0-9][A-Za-z0-9\-\/]{5,34}$/.test(v);
+  }
+
+  refSubmit.addEventListener('click', function () {
+    var v = refInput.value.trim();
     clearPayError();
 
-    if (typeof Razorpay === 'undefined') {
-      showPayError('Could not load the payment window. Check your connection and try again.');
+    if (!v) {
+      refInput.classList.add('err');
+      showPayError('Please enter the transaction reference from your UPI app.');
+      refInput.focus();
       return;
     }
-
-    var d = collect();
-    busy(true, 'Starting…');
-
-    fetch(ORDER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: d.name, email: d.email, mobile: d.mobile, city: d.city,
-        petName: d.petName, breed: d.breed, size: d.size
-      })
-    })
-      .then(function (r) {
-        /* a 404 HTML page is not JSON — say something a human can act on */
-        return r.text().then(function (t) {
-          var j = null;
-          try { j = JSON.parse(t); } catch (e) { j = null; }
-          if (!j) throw new Error('Online payment is not switched on yet. Please pay at the venue for now.');
-          if (!r.ok) throw new Error(j.error || 'Could not start the payment.');
-          return j;
-        });
-      })
-      .then(function (order) {
-        busy(false);
-
-        var rzp = new Razorpay({
-          key: order.keyId,
-          amount: order.amount,
-          currency: order.currency,
-          order_id: order.orderId,
-          name: "Dog's World India",
-          description: 'Independence Day Pet Parade 2026 — parade pass',
-          image: 'assets/logo.png',
-          prefill: { name: d.name, email: d.email, contact: d.mobile },
-          notes: { pet: d.petName, tshirt: d.size },
-          theme: { color: '#F0390B' },
-          modal: {
-            ondismiss: function () {
-              busy(false);
-              showPayError('Payment cancelled. You can try again, or pay at the venue.');
-            }
-          },
-          handler: function (resp) {
-            busy(true, 'Confirming…');
-            fetch(VERIFY_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(resp)
-            })
-              .then(function (r) { return r.json(); })
-              .then(function (out) {
-                busy(false);
-                if (out && out.valid) {
-                  markPaid(resp.razorpay_payment_id);
-                } else {
-                  /* money may well have left their account — never
-                     tell them it failed, tell them we'll check. */
-                  showPayError('We could not confirm the payment automatically. Note your payment ID ' +
-                               resp.razorpay_payment_id + ' and continue — we will verify it manually.');
-                  paidField.value = 'Yes';
-                  payIdField.value = resp.razorpay_payment_id;
-                }
-              })
-              .catch(function () {
-                busy(false);
-                showPayError('Payment went through but confirmation failed. Note your payment ID ' +
-                             resp.razorpay_payment_id + ' and continue.');
-                paidField.value = 'Yes';
-                payIdField.value = resp.razorpay_payment_id;
-              });
-          }
-        });
-
-        rzp.on('payment.failed', function (e) {
-          busy(false);
-          var msg = (e && e.error && e.error.description) || 'The payment did not go through.';
-          showPayError(msg + ' Please try again.');
-        });
-
-        rzp.open();
-      })
-      .catch(function (err) {
-        busy(false);
-        showPayError(err.message || 'Could not start the payment. Please try again.');
-      });
+    if (!refIsSane(v)) {
+      refInput.classList.add('err');
+      showPayError("That doesn't look like a transaction reference — it's usually 12 digits.");
+      refInput.focus();
+      return;
+    }
+    markSubmitted(v);
   });
 
-  /* clear the error state as soon as they start fixing it */
-  form.addEventListener('input', function (e) {
-    var f = e.target.closest('.field');
-    if (f) { f.classList.remove('bad'); e.target.classList.remove('err'); }
+  refInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); refSubmit.click(); }
   });
-  form.addEventListener('change', function (e) {
-    var fs = e.target.closest('fieldset');
-    if (fs) fs.classList.remove('bad');
-  });
+  refInput.addEventListener('input', clearPayError);
 
   /* ---------- data ---------- */
   function collect() {
     var d = {};
     ['name', 'email', 'mobile', 'city', 'petName', 'breed', 'source', 'before',
-     'paid', 'paymentId'].forEach(function (k) {
+     'paid', 'method', 'txnRef'].forEach(function (k) {
       var el = form.elements[k];
       d[k] = el ? el.value.trim() : '';
     });
@@ -804,16 +871,22 @@ fieldset.bad .hint{display:block}
       ['Pet', d.petName + (d.breed ? ' · ' + d.breed : '')],
       ['T-shirt', d.size],
       ['Mobile', d.mobile],
-      ['Payment', d.paid === 'Yes' ? 'Paid · ₹299' : 'At the venue · ₹299']
+      ['Amount', AMOUNT_TEXT],
+      ['Payment', d.txnRef ? 'UPI · verification pending' : 'Cash at the venue']
     ];
-    if (d.paymentId) rows.push(['Payment ID', d.paymentId]);
+    if (d.txnRef) rows.push(['Reference', d.txnRef]);
     document.getElementById('receipt').innerHTML = rows.map(function (r) {
       return '<div><dt>' + r[0] + '</dt><dd>' + (r[1] || '—') + '</dd></div>';
     }).join('');
 
-    document.getElementById('doneNote').textContent = d.paid === 'Yes'
-      ? "Payment received. We'll send the parade details to " + d.mobile + " closer to the day."
-      : "Carry ₹299 on the day — we'll message you on " + d.mobile + " with the details.";
+    /* nothing is verified yet — don't tell them the spot is confirmed */
+    document.getElementById('doneHead').textContent = d.txnRef
+      ? 'Registration received'
+      : "You're on the list!";
+
+    document.getElementById('doneNote').textContent = d.txnRef
+      ? "We'll match reference " + d.txnRef + " against our account and confirm on " + d.mobile + ". Keep your UPI receipt until then."
+      : "Carry " + AMOUNT_TEXT + " on the day — we'll message you on " + d.mobile + " with the details.";
   }
 
   /* ---------- navigation ---------- */
