@@ -20,6 +20,7 @@
   --blue:#1B4FC4;
   --blue-soft:#EEF3FF;
   --green:#128A3E;
+  --wa:#25D366;
   --ink:#0D1B33;
   --muted:#5C6B85;
   --line:#E9EDF5;
@@ -174,75 +175,44 @@ fieldset.bad .hint{display:block}
 .price-strip small{opacity:.85;font-size:.85rem;display:block}
 .price-strip .upi{font-size:.85rem;opacity:.9;text-align:right}
 
-/* ---------- Manual UPI pay block ---------- */
-.pay-block{text-align:center}
-.pay-block .btn-pay{width:100%;max-width:340px;padding:1.05rem 1.9rem;font-size:1.05rem}
+/* ---------- WhatsApp hand-off block ---------- */
+.wa-block{text-align:center}
+.wa-lead{font-size:.95rem;color:var(--muted);text-align:left;margin-bottom:1rem}
+.wa-lead b{color:var(--ink);font-weight:700}
 
-.upi-card{
-  display:flex;gap:1.3rem;align-items:center;text-align:left;flex-wrap:wrap;
-  border:1px solid var(--line);border-radius:18px;padding:1.15rem;background:#fff;
+.wa-preview{
+  text-align:left;white-space:pre-wrap;word-break:break-word;
+  font-size:.86rem;line-height:1.65;color:var(--ink);
+  background:#F4F8F5;border:1px solid #DCEBE0;border-left:3px solid var(--wa);
+  border-radius:14px;padding:.95rem 1.1rem;margin-bottom:1.15rem;
+  max-height:220px;overflow:auto;
 }
-.upi-card .qr{
-  flex:0 0 auto;width:172px;height:172px;border-radius:14px;border:1px solid var(--line);
-  padding:.5rem;background:#fff;object-fit:contain;
-}
-.upi-card .qr-side{flex:1 1 210px;min-width:0}
-.upi-card h3{font-size:1rem;font-weight:700}
-.upi-card .qr-hint{font-size:.85rem;color:var(--muted);margin-top:.2rem}
 
-.upi-id-row{
-  display:flex;align-items:center;gap:.5rem;margin-top:.85rem;
-  border:1px dashed var(--line);border-radius:12px;padding:.55rem .7rem;background:var(--blue-soft);
+.btn-wa{
+  width:100%;max-width:360px;background:var(--wa);color:#fff;
+  padding:1.05rem 1.9rem;font-size:1.05rem;text-decoration:none;
+  box-shadow:0 12px 28px -14px rgba(37,211,102,.95);
 }
-.upi-id-row code{
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem;font-weight:600;
-  color:var(--ink);flex:1;min-width:0;overflow-wrap:anywhere;
+.btn-wa svg{flex:0 0 auto}
+@media (hover:hover){
+  .btn-wa:hover{transform:translateY(-3px);box-shadow:0 20px 34px -14px rgba(37,211,102,.8)}
 }
-.copy-btn{
-  flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:100px;
-  font:inherit;font-size:.78rem;font-weight:600;color:var(--blue);padding:.3rem .8rem;cursor:pointer;
-}
-@media (hover:hover){.copy-btn:hover{border-color:var(--blue)}}
 
-.pay-amount{
-  display:inline-flex;align-items:baseline;gap:.35rem;margin-top:.2rem;
-  font-weight:700;font-size:1.05rem;
-}
-.pay-amount small{font-weight:500;font-size:.8rem;color:var(--muted)}
-
-.pay-methods{
-  display:flex;align-items:center;justify-content:center;gap:.55rem;flex-wrap:wrap;
-  margin-top:.9rem;font-size:.8rem;color:var(--muted);font-weight:500;
-}
-.pay-methods span{
-  border:1px solid var(--line);border-radius:100px;padding:.2rem .7rem;background:#fff;
-}
 .pay-secure{margin-top:.85rem;font-size:.78rem;color:var(--muted)}
 .pay-secure b{color:var(--ink);font-weight:600}
 
-/* reference-number step */
-.ref-box{
-  margin-top:1.15rem;text-align:left;border-top:1px solid var(--line);padding-top:1.15rem;
-}
-.ref-box .cap{display:block;font-size:.82rem;font-weight:600;margin-bottom:.35rem}
-.ref-box .cap .req{color:var(--orange)}
-.ref-box .ref-hint{font-size:.78rem;color:var(--muted);margin-top:.45rem}
-.ref-row{display:flex;gap:.6rem;flex-wrap:wrap}
-.ref-row input{
-  flex:1 1 200px;min-width:0;padding:.85rem 1rem;border:1px solid var(--line);border-radius:14px;
-  font:inherit;font-size:.95rem;background:#fff;color:var(--ink);
-  transition:border-color .25s,box-shadow .25s;
-}
-.ref-row input:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,79,196,.12)}
-.ref-row input.err{border-color:var(--orange);box-shadow:0 0 0 3px rgba(240,57,11,.12)}
-.ref-row .btn{flex:0 0 auto;padding:.85rem 1.5rem;font-size:.95rem}
-
 .pay-later{
-  margin-top:1.15rem;background:none;border:0;font:inherit;font-size:.85rem;
+  display:block;margin:1.15rem auto 0;background:none;border:0;font:inherit;font-size:.85rem;
   color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;
 }
 @media (hover:hover){.pay-later:hover{color:var(--blue)}}
 
+.pay-error{
+  display:none;margin-top:.9rem;font-size:.85rem;font-weight:600;color:var(--orange);
+}
+.pay-error.on{display:block;animation:shake .35s}
+
+/* state card once the message has gone out */
 .pay-state{
   display:none;text-align:left;gap:.85rem;align-items:flex-start;
   border:1px solid var(--line);border-radius:18px;padding:1.1rem 1.2rem;
@@ -251,27 +221,16 @@ fieldset.bad .hint{display:block}
 .pay-state.on{display:flex}
 .pay-state .mark{
   flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
-  font-size:1.15rem;font-weight:700;color:#fff;background:var(--green);
+  font-size:1.15rem;font-weight:700;color:#fff;background:var(--wa);
 }
 .pay-state h3{font-size:1rem;font-weight:700;line-height:1.35}
 .pay-state p{font-size:.85rem;color:var(--muted);margin-top:.15rem}
-.pay-state code{
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;
-  background:var(--line);border-radius:6px;padding:.1rem .4rem;
-}
-.pay-state.pending{border-color:rgba(240,57,11,.32);background:var(--orange-soft)}
-.pay-state.pending .mark{background:var(--orange);font-size:1rem}
-.pay-state.later{border-color:rgba(27,79,196,.3);background:var(--blue-soft)}
-.pay-state.later .mark{background:var(--blue)}
+.pay-state.paid{border-color:rgba(37,211,102,.4);background:rgba(37,211,102,.07)}
 .pay-state .redo{
-  background:none;border:0;font:inherit;font-size:.82rem;color:var(--orange);
+  background:none;border:0;font:inherit;font-size:.82rem;color:var(--blue);
   font-weight:600;cursor:pointer;padding:0;margin-top:.4rem;text-decoration:underline;
   text-underline-offset:3px;
 }
-.pay-error{
-  display:none;margin-top:.9rem;font-size:.85rem;font-weight:600;color:var(--orange);
-}
-.pay-error.on{display:block;animation:shake .35s}
 
 /* ---------- Buttons ---------- */
 .actions{margin-top:auto;padding-top:clamp(1.4rem,2.4vw,2rem);display:flex;gap:.8rem;align-items:center}
@@ -380,9 +339,8 @@ fieldset.bad .hint{display:block}
     <ol class="steps" id="steps">
       <li class="active" data-step="1"><span class="dot"><span class="num">1</span><span class="tick">✓</span></span><span class="label">Your details</span></li>
       <li data-step="2"><span class="dot"><span class="num">2</span><span class="tick">✓</span></span><span class="label">Your pet</span></li>
-      <li data-step="3"><span class="dot"><span class="num">3</span><span class="tick">✓</span></span><span class="label">Payment</span></li>
-      <li data-step="4"><span class="dot"><span class="num">4</span><span class="tick">✓</span></span><span class="label">Almost done</span></li>
-      <li data-step="5"><span class="dot"><span class="num">5</span><span class="tick">✓</span></span><span class="label">Confirmed</span></li>
+      <li data-step="3"><span class="dot"><span class="num">3</span><span class="tick">✓</span></span><span class="label">Confirm on WhatsApp</span></li>
+      <li data-step="4"><span class="dot"><span class="num">4</span><span class="tick">✓</span></span><span class="label">Done</span></li>
     </ol>
 
     <p class="rail-foot">Questions? <a href="index.html#faq">Read the FAQ</a></p>
@@ -442,6 +400,15 @@ fieldset.bad .hint{display:block}
           </div>
           <span class="hint">Please pick a T-shirt size.</span>
         </fieldset>
+
+        <div class="grid two" style="margin-top:1.15rem">
+          <label class="field"><span class="cap">How did you find out about the Pet Parade? </span>
+            <input type="text" name="source" placeholder="Instagram, a friend, walked past…" />
+          </label>
+          <label class="field"><span class="cap">Have you been to the Pet Parade before? </span>
+            <input type="text" name="before" placeholder="Yes, last year / First time" />
+          </label>
+        </div>
       </div>
 
       <!-- STEP 3 -->
@@ -452,66 +419,35 @@ fieldset.bad .hint{display:block}
         </div>
 
         <input type="hidden" name="paid" id="paidField" value="" />
-        <input type="hidden" name="method" id="methodField" value="" />
-        <input type="hidden" name="txnRef" id="txnRefField" value="" />
+        <input type="hidden" name="method" id="methodField" value="WhatsApp" />
 
-        <div class="pay-block" id="payBlock">
-          <div class="upi-card" id="upiCard">
-            <img class="qr" id="upiQr" src="assets/upi-qr.png" alt="UPI QR code to pay ₹299 to Dog's World India" />
-            <div class="qr-side">
-              <h3>Scan &amp; pay with any UPI app</h3>
-              <p class="qr-hint">GPay · PhonePe · Paytm · BHIM · your bank app</p>
-              <div class="upi-id-row">
-                <code id="upiIdText">—</code>
-                <button type="button" class="copy-btn" id="copyUpi">Copy</button>
-              </div>
-              <p class="pay-amount"><span id="upiAmount">₹299</span><small>exact amount, please</small></p>
-            </div>
-          </div>
+        <div class="wa-block" id="waBlock">
+          <p class="wa-lead">Your registration is typed out and ready. Tap below — WhatsApp opens with everything filled in, and all you do is press <b>send</b>. We reply with the ₹299 payment details and confirm your spot.</p>
 
-          <div class="pay-methods" id="upiAppRow" style="margin-top:1.1rem">
-            <a class="btn btn-primary btn-pay" id="upiIntent" href="#" style="text-decoration:none">Open UPI App and Pay ₹299</a>
-          </div>
-          <p class="pay-secure" id="upiDesktopHint">On a laptop? Scan the QR with your phone instead.</p>
+          <div class="wa-preview" id="waPreview" aria-label="Message that will be sent"></div>
 
-          <div class="ref-box">
-            <label class="cap" for="refInput">Paid? Enter your UPI transaction / reference number <span class="req">*</span></label>
-            <div class="ref-row">
-              <input type="text" id="refInput" inputmode="latin" autocomplete="off"
-                     placeholder="e.g. 412345678901" maxlength="35" />
-              <button type="button" class="btn btn-primary" id="refSubmit">Submit</button>
-            </div>
-            <p class="ref-hint">Your UPI app shows this as <b>UPI transaction ID</b>, <b>UTR</b> or <b>reference number</b> on the success screen. We check it against our account before confirming your spot.</p>
-            <p class="pay-error" id="payError"></p>
-          </div>
+          <a class="btn btn-wa" id="waBtn" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.48-.5-.67-.5h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.47s1.06 2.86 1.21 3.06c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35z"/><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2zm0 18.02h-.01c-1.52 0-3.01-.41-4.31-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.21 8.21 0 0 1-1.26-4.39c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.83 2.41a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24z"/></svg>
+            <span>Send on WhatsApp</span>
+          </a>
 
-          <button type="button" class="pay-later" id="payLaterBtn">I'll pay at the venue instead</button>
+          <p class="pay-secure">Opens a chat with <b>+91 82918 21712</b> · Dog’s World India</p>
+          <p class="pay-error" id="payError"></p>
+          <button type="button" class="pay-later" id="copyMsgBtn">WhatsApp didn’t open? Copy my details instead</button>
         </div>
 
         <div class="pay-state" id="payState">
           <div class="mark" id="payStateMark">✓</div>
           <div>
-            <h3 id="payStateTitle">Payment submitted — verification pending</h3>
+            <h3 id="payStateTitle">WhatsApp opened</h3>
             <p id="payStateNote"></p>
-            <button type="button" class="redo" id="payRedo">Pay by UPI instead</button>
+            <button type="button" class="redo" id="payRedo">Open WhatsApp again</button>
           </div>
         </div>
       </div>
 
-      <!-- STEP 4 -->
+      <!-- STEP 4 — success -->
       <div class="pane" data-pane="4">
-        <div class="grid">
-          <label class="field"><span class="cap">How did you find out about the Pet Parade? </span>
-            <input type="text" name="source" placeholder="Instagram, a friend, walked past…" />
-          </label>
-          <label class="field"><span class="cap">Have you been to the Pet Parade before? </span>
-            <input type="text" name="before" placeholder="Yes, last year / First time" />
-          </label>
-        </div>
-      </div>
-
-      <!-- STEP 5 — success -->
-      <div class="pane" data-pane="5">
         <div class="done-wrap">
           <div class="done-mark">✓</div>
           <h2 id="doneHead">You're on the list!</h2>
@@ -524,7 +460,7 @@ fieldset.bad .hint{display:block}
       <div class="actions" id="actions">
         <button type="button" class="btn btn-ghost" id="backBtn" style="display:none">Back</button>
         <button type="button" class="btn btn-primary" id="nextBtn"><span class="spin"></span><span id="nextLabel">Continue</span></button>
-        <span class="step-count" id="stepCount">Step 1 of 4</span>
+        <span class="step-count" id="stepCount">Step 1 of 3</span>
       </div>
 
     </form>
@@ -536,89 +472,33 @@ fieldset.bad .hint{display:block}
   'use strict';
 
   /* ============================================================
-     GOOGLE FORM WIRING
+     WHATSAPP HAND-OFF
 
-     SUBMIT_MODE — how answers reach the responses sheet.
+     Registrations come in over WhatsApp, not through a payment
+     gateway. The page collects the details, writes them into a
+     ready-made message, and opens the chat — the registrant only
+     presses send. Payment (₹299) is settled in that conversation.
 
-     'redirect' (current, works today)
-        Sends the user to the Google Form with every answer
-        already filled in. They just press Submit there.
-        Needed because the form is set to "Collect email
-        addresses: Verified", which requires a Google sign-in
-        and rejects submissions sent from this page.
+     The Google Form is no longer in the flow: it demanded a Google
+     sign-in, which was the slowest part of signing up. The message
+     below is the record of a registration, so keep the chat.
 
-     'direct' (nicer, one setting away)
-        Posts silently in the background and shows the
-        confirmation screen on this site — the user never
-        leaves. To switch:
-          1. Google Form → Settings → Responses
-          2. "Collect email addresses" → Do not collect
-          3. Add a Short answer question titled "Email"
-             (so the address below still gets recorded)
-          4. Set SUBMIT_MODE = 'direct' and paste the new
-             Email entry ID into FIELDS.email
+     Razorpay's api/order.js and api/verify.js are still in the repo
+     for when the bank side is sorted — see the README.
      ============================================================ */
-  var SUBMIT_MODE = 'redirect';
+  var WA_NUMBER = '918291821712';        /* country code + number, digits only */
+  var WA_SHOWN  = '+91 82918 21712';     /* how it is shown on the page */
 
-  var FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScvJ3Zj9nx8uipAJnvnChcUmcWeo2V6RtDgcqIwzLdClNhDHg/formResponse';
-  var FORM_VIEW   = 'https://docs.google.com/forms/d/e/1FAIpQLScvJ3Zj9nx8uipAJnvnChcUmcWeo2V6RtDgcqIwzLdClNhDHg/viewform';
-
-  var FIELDS = {
-    name:    'entry.290104340',
-    petName: 'entry.1378896446',
-    breed:   'entry.1681729863',
-    mobile:  'entry.2035928390',
-    size:    'entry.45563250',
-    paid:    'entry.286520226',
-    city:    'entry.838219199',
-    source:  'entry.1102715980',
-    before:  'entry.60262619',
-    /* The form has no questions for these yet. Add them as short
-       answer questions, then paste their entry IDs here and the
-       answers start landing in the responses sheet:
-         "Email"                          → email
-         "Payment method"                 → method
-         "UPI transaction reference"      → txnRef                */
-    email:  '',
-    method: '',
-    txnRef: ''
-  };
-
-  /* ============================================================
-     MANUAL UPI PAYMENT  (temporary — replaces Razorpay checkout)
-
-     Money goes straight to the partnership merchant UPI account.
-     Nothing here can confirm a payment, so the page never claims
-     one: it collects the transaction reference and says
-     "verification pending" until someone checks the account.
-
-     The Razorpay route is parked, not deleted — api/order.js and
-     api/verify.js are still in the repo. See the README to switch
-     back.
-
-     Set these three, and drop the QR image at assets/upi-qr.png:
-     ============================================================ */
-  var UPI_ID   = '';                        /* ← merchant UPI id, e.g. name@okhdfcbank */
-  var UPI_NAME = "Dog's World India";       /* name shown in the payer's UPI app */
-  var UPI_QR   = 'assets/upi-qr.png';       /* ← merchant QR image */
-
-  var AMOUNT      = '299.00';
   var AMOUNT_TEXT = '₹299';
-  var UPI_NOTE    = 'Pet Parade 2026';
 
   var COPY = [
     null,
     { t: 'Your details',  s: "So we know who's walking with us on the day." },
     { t: 'Your pet',      s: 'The star of the parade. Tell us about them.' },
-    { t: 'Payment',       s: 'Pay ₹299 by UPI, then enter your reference number.' },
-    { t: 'Almost done',   s: 'Two optional questions, then you\'re in.' }
+    { t: 'Confirm on WhatsApp', s: 'One tap, then press send. We take it from there.' }
   ];
 
-  if (SUBMIT_MODE === 'redirect') {
-    COPY[4].s = 'Two optional questions. Then we\'ll take you to a short confirmation page to finish.';
-  }
-
-  var TOTAL = 4;
+  var TOTAL = 3;
   var step = 1;
 
   var form     = document.getElementById('regForm');
@@ -654,7 +534,7 @@ fieldset.bad .hint{display:block}
       sub.textContent = COPY[n].s;
       counter.textContent = 'Step ' + n + ' of ' + TOTAL;
       backBtn.style.display = n === 1 ? 'none' : '';
-      nextLbl.textContent = n === TOTAL ? 'Complete registration' : 'Continue';
+      nextLbl.textContent = n === TOTAL ? 'Finish' : 'Continue';
       document.querySelector('.panel-head').style.display = '';
       actions.style.display = '';
     } else {
@@ -687,9 +567,9 @@ fieldset.bad .hint{display:block}
       if (!picked) { ok = false; if (!firstBad) firstBad = fs; }
     });
 
-    /* step 3 — they must have paid, or have chosen to pay at the venue */
-    if (n === 3 && !paidField.value) {
-      showPayError('Please enter your UPI reference number, or choose to pay at the venue.');
+    /* step 3 — the registration only exists once it has gone to WhatsApp */
+    if (n === 3 && !waSent) {
+      showPayError('Tap “Send on WhatsApp” first — that is what registers you.');
       ok = false;
     }
 
@@ -697,9 +577,11 @@ fieldset.bad .hint{display:block}
     return ok;
   }
 
-  /* ---------- payment (manual UPI) ---------- */
-  var payBlock   = document.getElementById('payBlock');
-  var payLaterBtn= document.getElementById('payLaterBtn');
+  /* ---------- WhatsApp hand-off ---------- */
+  var waBlock    = document.getElementById('waBlock');
+  var waBtn      = document.getElementById('waBtn');
+  var waPreview  = document.getElementById('waPreview');
+  var copyMsgBtn = document.getElementById('copyMsgBtn');
   var payError   = document.getElementById('payError');
   var payState   = document.getElementById('payState');
   var payStateMark  = document.getElementById('payStateMark');
@@ -707,146 +589,91 @@ fieldset.bad .hint{display:block}
   var payStateNote  = document.getElementById('payStateNote');
   var payRedo    = document.getElementById('payRedo');
   var paidField  = document.getElementById('paidField');
-  var methodField= document.getElementById('methodField');
-  var txnRefField= document.getElementById('txnRefField');
 
-  var upiCard    = document.getElementById('upiCard');
-  var upiQr      = document.getElementById('upiQr');
-  var upiIdText  = document.getElementById('upiIdText');
-  var upiIntent  = document.getElementById('upiIntent');
-  var upiAppRow  = document.getElementById('upiAppRow');
-  var upiDeskHint= document.getElementById('upiDesktopHint');
-  var copyUpi    = document.getElementById('copyUpi');
-  var refInput   = document.getElementById('refInput');
-  var refSubmit  = document.getElementById('refSubmit');
+  var waSent = false;
 
   function showPayError(msg) {
     payError.textContent = msg;
     payError.classList.add('on');
   }
-  function clearPayError() {
-    payError.classList.remove('on');
-    refInput.classList.remove('err');
+  function clearPayError() { payError.classList.remove('on'); }
+
+  /* the message the registrant sends us — this is the registration */
+  function buildMessage(d) {
+    var lines = [
+      '🐾 Pet Parade 2026 — registration',
+      '',
+      'Name: ' + d.name,
+      'Mobile: ' + d.mobile
+    ];
+    if (d.email) lines.push('Email: ' + d.email);
+    if (d.city)  lines.push('City: ' + d.city);
+    lines.push('Pet: ' + d.petName + (d.breed ? ' (' + d.breed + ')' : ''));
+    lines.push('T-shirt: ' + d.size);
+    if (d.source) lines.push('Found out via: ' + d.source);
+    if (d.before) lines.push('Been before: ' + d.before);
+    lines.push('Pass: ' + AMOUNT_TEXT + ' (1 pet + 1 parent)');
+    lines.push('');
+    lines.push('Please confirm my spot and share the payment details.');
+    return lines.join('\n');
   }
 
-  /* ---- build the payment surface from the config above ---- */
-  var upiReady = !!UPI_ID;
-
-  if (upiReady) {
-    upiQr.src = UPI_QR;
-    upiIdText.textContent = UPI_ID;
-    upiIntent.href = 'upi://pay?pa=' + encodeURIComponent(UPI_ID) +
-                     '&pn=' + encodeURIComponent(UPI_NAME) +
-                     '&am=' + AMOUNT +
-                     '&cu=INR' +
-                     '&tn=' + encodeURIComponent(UPI_NOTE);
-    document.getElementById('upiAmount').textContent = AMOUNT_TEXT;
-  } else {
-    /* nothing to pay to yet — don't show a dead QR or a dead button */
-    upiCard.style.display = 'none';
-    upiAppRow.style.display = 'none';
-    upiDeskHint.textContent = 'Online payment is being set up. Please choose "pay at the venue" for now.';
-    refInput.disabled = true;
-    refSubmit.disabled = true;
+  function waLink(d) {
+    return 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(buildMessage(d));
   }
 
-  /* the QR may simply not be uploaded yet — hide the frame rather
-     than show a broken image */
-  upiQr.addEventListener('error', function () { upiQr.style.display = 'none'; });
+  /* keep the preview and the link in step with whatever they typed */
+  function refreshWa() {
+    var d = collect();
+    waPreview.textContent = buildMessage(d);
+    waBtn.href = waLink(d);
+  }
 
-  copyUpi.addEventListener('click', function () {
-    if (!upiReady) return;
+  function markSent() {
+    waSent = true;
+    paidField.value = 'Sent on WhatsApp';
+    waBlock.style.display = 'none';
+    payState.className = 'pay-state on paid';
+    payStateMark.textContent = '✓';
+    payStateTitle.textContent = 'WhatsApp is open — press send';
+    payStateNote.textContent = 'Send the message we prepared and we’ll reply with the ' + AMOUNT_TEXT +
+      ' payment details. Nothing else to do here — tap Finish below.';
+    payRedo.textContent = 'Open WhatsApp again';
+  }
+
+  waBtn.addEventListener('click', function () {
+    clearPayError();
+    /* the link opens the chat on its own; we only move our own UI on */
+    setTimeout(markSent, 400);
+  });
+
+  payRedo.addEventListener('click', function () {
+    refreshWa();
+    window.open(waBtn.href, '_blank', 'noopener');
+  });
+
+  copyMsgBtn.addEventListener('click', function () {
+    var text = buildMessage(collect()) + '\n\n(' + WA_SHOWN + ')';
     var done = function () {
-      copyUpi.textContent = 'Copied';
-      setTimeout(function () { copyUpi.textContent = 'Copy'; }, 1600);
+      copyMsgBtn.textContent = 'Copied — paste it to ' + WA_SHOWN;
+      markSent();
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(UPI_ID).then(done, done);
+      navigator.clipboard.writeText(text).then(done, done);
     } else {
       var t = document.createElement('textarea');
-      t.value = UPI_ID; document.body.appendChild(t); t.select();
+      t.value = text; document.body.appendChild(t); t.select();
       try { document.execCommand('copy'); } catch (e) {}
       document.body.removeChild(t);
       done();
     }
   });
 
-  /* ---- states ---- */
-  function markSubmitted(ref) {
-    paidField.value   = 'Yes';          /* what they tell us */
-    methodField.value = 'UPI';
-    txnRefField.value = ref;
-    payBlock.style.display = 'none';
-    payState.className = 'pay-state on pending';
-    payStateMark.textContent = '⏳';
-    payStateTitle.textContent = 'Payment submitted — verification pending';
-    payStateNote.innerHTML = 'Reference <code>' + ref + '</code> · ' + AMOUNT_TEXT +
-      '. We check every transfer against our account by hand, so your spot is confirmed once that clears.';
-    payRedo.textContent = 'Change the reference number';
-    payRedo.style.display = '';
-  }
-
-  function markLater() {
-    paidField.value   = 'Not yet';
-    methodField.value = 'Cash at venue';
-    txnRefField.value = '';
-    payBlock.style.display = 'none';
-    payState.className = 'pay-state on later';
-    payStateMark.textContent = '₹';
-    payStateTitle.textContent = 'Paying at the venue';
-    payStateNote.textContent = 'Carry ' + AMOUNT_TEXT + ' on the day. Spots are confirmed on a first-come basis, so paying now is safer.';
-    payRedo.textContent = upiReady ? 'Pay by UPI instead' : 'Back';
-    payRedo.style.display = upiReady ? '' : 'none';
-  }
-
-  function resetPay() {
-    paidField.value = '';
-    methodField.value = '';
-    txnRefField.value = '';
-    payState.className = 'pay-state';
-    payBlock.style.display = '';
-    clearPayError();
-  }
-
-  payLaterBtn.addEventListener('click', function () { clearPayError(); markLater(); });
-  payRedo.addEventListener('click', function () { resetPay(); refInput.focus(); });
-
-  /* ---- reference number ---- */
-  function refIsSane(v) {
-    /* UPI ids/UTRs are 12 digits, but banks and apps vary — accept
-       anything that looks like a reference, reject obvious junk. */
-    return /^[A-Za-z0-9][A-Za-z0-9\-\/]{5,34}$/.test(v);
-  }
-
-  refSubmit.addEventListener('click', function () {
-    var v = refInput.value.trim();
-    clearPayError();
-
-    if (!v) {
-      refInput.classList.add('err');
-      showPayError('Please enter the transaction reference from your UPI app.');
-      refInput.focus();
-      return;
-    }
-    if (!refIsSane(v)) {
-      refInput.classList.add('err');
-      showPayError("That doesn't look like a transaction reference — it's usually 12 digits.");
-      refInput.focus();
-      return;
-    }
-    markSubmitted(v);
-  });
-
-  refInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); refSubmit.click(); }
-  });
-  refInput.addEventListener('input', clearPayError);
-
   /* ---------- data ---------- */
   function collect() {
     var d = {};
     ['name', 'email', 'mobile', 'city', 'petName', 'breed', 'source', 'before',
-     'paid', 'method', 'txnRef'].forEach(function (k) {
+     'paid', 'method'].forEach(function (k) {
       var el = form.elements[k];
       d[k] = el ? el.value.trim() : '';
     });
@@ -857,36 +684,27 @@ fieldset.bad .hint{display:block}
     return d;
   }
 
-  function buildParams(d) {
-    var p = new URLSearchParams();
-    Object.keys(FIELDS).forEach(function (k) {
-      if (FIELDS[k] && d[k]) p.append(FIELDS[k], d[k]);
-    });
-    return p;
-  }
-
   function showReceipt(d) {
     var rows = [
       ['Name', d.name],
-      ['Pet', d.petName + (d.breed ? ' · ' + d.breed : '')],
+      ['Pet', d.petName + (d.breed ? ' \u00b7 ' + d.breed : '')],
       ['T-shirt', d.size],
       ['Mobile', d.mobile],
-      ['Amount', AMOUNT_TEXT],
-      ['Payment', d.txnRef ? 'UPI · verification pending' : 'Cash at the venue']
+      ['Pass', AMOUNT_TEXT],
+      ['Sent to', WA_SHOWN]
     ];
-    if (d.txnRef) rows.push(['Reference', d.txnRef]);
     document.getElementById('receipt').innerHTML = rows.map(function (r) {
-      return '<div><dt>' + r[0] + '</dt><dd>' + (r[1] || '—') + '</dd></div>';
+      return '<div><dt>' + r[0] + '</dt><dd>' + (r[1] || '\u2014') + '</dd></div>';
     }).join('');
 
-    /* nothing is verified yet — don't tell them the spot is confirmed */
-    document.getElementById('doneHead').textContent = d.txnRef
-      ? 'Registration received'
-      : "You're on the list!";
-
-    document.getElementById('doneNote').textContent = d.txnRef
-      ? "We'll match reference " + d.txnRef + " against our account and confirm on " + d.mobile + ". Keep your UPI receipt until then."
-      : "Carry " + AMOUNT_TEXT + " on the day — we'll message you on " + d.mobile + " with the details.";
+    /* the spot is held once they actually send the message and we
+       reply — say that, don't promise more */
+    document.getElementById('doneHead').textContent = 'Almost there \u2014 send the message';
+    document.getElementById('doneLine').textContent =
+      'Your details are waiting in WhatsApp. Press send and we\u2019ll confirm your spot and share the ' +
+      AMOUNT_TEXT + ' payment details.';
+    document.getElementById('doneNote').textContent =
+      'Parade day: 15 August 2026, 8:00 AM, Dr. Kashinath Ghanekar Natyagruha.';
   }
 
   /* ---------- navigation ---------- */
@@ -897,34 +715,17 @@ fieldset.bad .hint{display:block}
   nextBtn.addEventListener('click', function () {
     if (!validate(step)) return;
 
-    if (step < TOTAL) { step++; showPane(step); return; }
-
-    /* final step — submit */
-    var d = collect();
-    nextBtn.classList.add('loading');
-    nextBtn.disabled = true;
-
-    if (SUBMIT_MODE === 'direct') {
-      /* post in the background, confirm on this site */
-      nextLbl.textContent = 'Sending…';
-      fetch(FORM_ACTION, { method: 'POST', mode: 'no-cors', body: buildParams(d) })
-        .then(function () {
-          showReceipt(d);
-          step = 5;
-          showPane(5);
-        })
-        .catch(function () {
-          /* never swallow a failed registration — hand it to Google */
-          window.location.href = FORM_VIEW + '?usp=pp_url&' + buildParams(d).toString();
-        });
+    if (step < TOTAL) {
+      step++;
+      if (step === 3) refreshWa();   /* message must match the latest answers */
+      showPane(step);
       return;
     }
 
-    /* redirect mode — send them to the form with everything prefilled,
-       so the response is always recorded even though this page
-       cannot post on their behalf. */
-    nextLbl.textContent = 'Taking you to confirm…';
-    window.location.href = FORM_VIEW + '?usp=pp_url&' + buildParams(d).toString();
+    /* last step — the registration already went out over WhatsApp */
+    showReceipt(collect());
+    step = 4;
+    showPane(4);
   });
 
   /* Enter key moves forward instead of submitting */

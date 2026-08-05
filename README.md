@@ -9,65 +9,56 @@ Landing page + registration for the Independence Day Pet Parade by Dog's World I
 ## Structure
 
 - `index.html` — landing page (styles + script inline)
-- `register.html` — 4-step registration wizard with Razorpay payment
-- `api/order.js` — creates the ₹299 Razorpay order (server-side)
-- `api/verify.js` — verifies the payment signature (server-side)
+- `register.html` — 3-step registration wizard, hands off to WhatsApp
+- `api/order.js`, `api/verify.js` — parked Razorpay functions (see below)
 - `assets/` — logo and route map
 
-## Deploy (Vercel — required for payments)
+## Deploy
 
-The two files in `api/` are serverless functions. They only run on Vercel
-(or Netlify Functions with small changes). **On GitHub Pages the payment
-button will not work** — the page then tells people to pay at the venue.
+Live at **https://dogs-world-parade.vercel.app**.
 
-1. [vercel.com/new](https://vercel.com/new) → import this GitHub repo.
-2. Framework preset: **Other**. No build command, no output directory.
-3. Deploy.
-
-## Payments — manual UPI (current)
-
-Step 3 of `register.html` currently takes payment **straight into the
-partnership merchant UPI account**: QR code, UPI id, an "Open UPI App and
-Pay ₹299" intent link, and a box for the payer's transaction reference.
-
-Nothing on the page can confirm a transfer, so it never claims one — it
-shows **"Payment submitted — verification pending"** and the confirmation
-screen says the spot is held once the transfer is checked by hand.
-"Pay at the venue instead" stays as a fallback.
-
-To switch it on, set these at the top of the script in `register.html`
-(search for `MANUAL UPI PAYMENT`) and add the QR image:
-
-| What | Where |
-|---|---|
-| Merchant UPI id | `var UPI_ID = 'name@bank';` |
-| Name shown in the payer's app | `var UPI_NAME` |
-| QR image | save it as `assets/upi-qr.png` |
-
-Until `UPI_ID` is set the QR and the pay button stay hidden and the page
-asks people to pay at the venue — no dead buttons, no broken image.
-
-Only the UPI id and the QR ever appear on the page. **Never put the account
-number, IFSC, netbanking login or any bank credential in this repo** — they
-are not needed to receive money and the repo is public.
-
-### Reconciling
-
-Every submitted reference lands in the registration response. Match each one
-against the credits in the merchant account before treating a spot as
-confirmed — the reference is typed in by the payer and is not proof on its own.
-
-### Going back to Razorpay
-
-`api/order.js` and `api/verify.js` are untouched and still deployed. To
-restore automatic checkout, put back the checkout script tag in the `<head>`
-
-```html
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+```
+npx vercel@latest deploy --prod
 ```
 
-and restore the Razorpay pay block from git history (`git log -- register.html`,
-commit *"Take ₹299 online with Razorpay"*), then set the env vars below.
+The registration flow is plain static HTML — it also works on GitHub Pages
+or Netlify. Only the parked `api/` functions need Vercel.
+
+## How registration works (current)
+
+`register.html` is a 3-step wizard:
+
+1. **Your details** — name, email, mobile, city
+2. **Your pet** — pet name, breed, T-shirt size, plus two optional questions
+3. **Confirm on WhatsApp** — the answers are written into a ready-made
+   message and the chat opens; the registrant only presses **send**
+
+The ₹299 is settled in that conversation. There is no payment gateway and
+no bank detail anywhere in this repo.
+
+**The WhatsApp chat is the record of a registration** — the Google Form is
+no longer in the flow (it demanded a Google sign-in, which was the slowest
+part of signing up). Keep the chat, or copy the messages into a sheet as
+they come in.
+
+To change the number, edit `WA_NUMBER` (digits only, with country code)
+and `WA_SHOWN` at the top of the script in `register.html`. They are
+currently `918291821712` / `+91 82918 21712`.
+
+The message text is built in `buildMessage()` in the same script — edit
+there to change what gets sent.
+
+### If WhatsApp doesn't open
+
+The page has a fallback: *"WhatsApp didn't open? Copy my details instead"*
+copies the same message to the clipboard so it can be pasted into any chat.
+
+### Bringing back a payment gateway
+
+`api/order.js` and `api/verify.js` are untouched and still deployed, and
+the Razorpay checkout block plus the Google Form wiring are in git history
+(`git log -- register.html`) — commits *"Take ₹299 online with Razorpay"*
+and *"Swap Razorpay checkout for a manual UPI flow"*.
 
 ## Razorpay setup (parked)
 
@@ -95,44 +86,3 @@ Enable the methods you want (UPI, cards, netbanking, wallets) under
 `RAZORPAY_KEY_SECRET` must only ever live in Vercel's environment variables.
 This repo is public — a leaked secret lets anyone charge or refund on the
 account. The key **id** is public by design and is safe in the browser.
-
-## How the payment works
-
-1. Browser asks `/api/order` for an order. The **amount (₹299) is set in
-   `api/order.js`**, never sent by the browser, so it cannot be edited to ₹1.
-2. Razorpay Checkout opens. Razorpay handles the card/UPI details — the site
-   never sees them.
-3. On success Razorpay returns a signature. `/api/verify` recomputes it as
-   `HMAC_SHA256(order_id|payment_id, key_secret)` and only then does the page
-   mark the registration paid. A faked success screen cannot pass this.
-4. The registrant's name, email, mobile, pet, breed and T-shirt size are
-   attached to the order as **notes**, so even someone who pays and then
-   closes the tab is visible in the Razorpay dashboard.
-
-To change the price, edit `AMOUNT_PAISE` in `api/order.js` (in paise:
-`29900` = ₹299) and the display text in `register.html`.
-
-## Registrations
-
-Answers still go to the existing Google Form / responses sheet.
-`register.html` currently uses `SUBMIT_MODE = 'redirect'` because the form is
-set to *Collect email addresses: Verified*, which requires a Google sign-in.
-Switching that off (and adding a plain **Email** question) lets you set
-`SUBMIT_MODE = 'direct'` so people never leave the site — see the comment at
-the top of the script in `register.html`.
-
-### Missing questions
-
-The form has no question for the email address, the payment method or the UPI
-reference, so those three answers are collected on the page but **do not reach
-the responses sheet yet**. Add them to the Google Form as *Short answer*
-questions and paste their `entry.…` ids into `FIELDS` in `register.html`:
-
-| Add this question | Fill in |
-|---|---|
-| Email | `FIELDS.email` |
-| Payment method | `FIELDS.method` |
-| UPI transaction reference | `FIELDS.txnRef` |
-
-The entry id of a question can be read off the form's prefill link
-(⋮ → Get pre-filled link).
