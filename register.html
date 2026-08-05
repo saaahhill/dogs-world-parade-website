@@ -7,6 +7,7 @@
 <meta name="description" content="Register your pet for the Dog's World India Independence Day Pet Parade, 15 August 2026. ₹299 per pet." />
 <link rel="icon" href="assets/logo.png" />
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <style>
 /* ============================================================
@@ -173,6 +174,54 @@ fieldset.bad .hint{display:block}
 .price-strip b{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;line-height:1}
 .price-strip small{opacity:.85;font-size:.85rem;display:block}
 .price-strip .upi{font-size:.85rem;opacity:.9;text-align:right}
+
+/* ---------- Razorpay pay block ---------- */
+.pay-block{text-align:center}
+.pay-block .btn-pay{width:100%;max-width:340px;padding:1.05rem 1.9rem;font-size:1.05rem}
+.pay-methods{
+  display:flex;align-items:center;justify-content:center;gap:.55rem;flex-wrap:wrap;
+  margin-top:.9rem;font-size:.8rem;color:var(--muted);font-weight:500;
+}
+.pay-methods span{
+  border:1px solid var(--line);border-radius:100px;padding:.2rem .7rem;background:#fff;
+}
+.pay-secure{margin-top:.85rem;font-size:.78rem;color:var(--muted)}
+.pay-secure b{color:var(--ink);font-weight:600}
+
+.pay-later{
+  margin-top:1.15rem;background:none;border:0;font:inherit;font-size:.85rem;
+  color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+}
+@media (hover:hover){.pay-later:hover{color:var(--blue)}}
+
+.pay-state{
+  display:none;text-align:left;gap:.85rem;align-items:flex-start;
+  border:1px solid var(--line);border-radius:18px;padding:1.1rem 1.2rem;
+  animation:paneIn .45s var(--ease) both;
+}
+.pay-state.on{display:flex}
+.pay-state .mark{
+  flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  font-size:1.15rem;font-weight:700;color:#fff;background:var(--green);
+}
+.pay-state h3{font-size:1rem;font-weight:700;line-height:1.35}
+.pay-state p{font-size:.85rem;color:var(--muted);margin-top:.15rem}
+.pay-state code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;
+  background:var(--line);border-radius:6px;padding:.1rem .4rem;
+}
+.pay-state.paid{border-color:rgba(18,138,62,.35);background:rgba(18,138,62,.05)}
+.pay-state.later{border-color:rgba(27,79,196,.3);background:var(--blue-soft)}
+.pay-state.later .mark{background:var(--blue)}
+.pay-state .redo{
+  background:none;border:0;font:inherit;font-size:.82rem;color:var(--orange);
+  font-weight:600;cursor:pointer;padding:0;margin-top:.4rem;text-decoration:underline;
+  text-underline-offset:3px;
+}
+.pay-error{
+  display:none;margin-top:.9rem;font-size:.85rem;font-weight:600;color:var(--orange);
+}
+.pay-error.on{display:block;animation:shake .35s}
 
 /* ---------- Buttons ---------- */
 .actions{margin-top:auto;padding-top:clamp(1.4rem,2.4vw,2rem);display:flex;gap:.8rem;align-items:center}
@@ -352,14 +401,30 @@ fieldset.bad .hint{display:block}
           <div class="upi">Raincoat / T-shirt · collar · flag<br />goodie bag · Frusion Cafe voucher</div>
         </div>
 
-        <fieldset data-required data-name="paid">
-          <legend>Have you made the payment for the Pet Parade? <span class="req">*</span></legend>
-          <div class="opts row2">
-            <label class="opt"><input type="radio" name="paid" value="Yes" /><span>Yes<small>Payment done</small></span></label>
-            <label class="opt"><input type="radio" name="paid" value="Not yet" /><span>Not yet<small>We'll follow up</small></span></label>
+        <input type="hidden" name="paid" id="paidField" value="" />
+        <input type="hidden" name="paymentId" id="paymentIdField" value="" />
+
+        <div class="pay-block" id="payBlock">
+          <button type="button" class="btn btn-primary btn-pay" id="payBtn">
+            <span class="spin"></span><span id="payLabel">Pay ₹299 securely</span>
+          </button>
+          <div class="pay-methods">
+            <span>UPI</span><span>GPay</span><span>PhonePe</span><span>Paytm</span>
+            <span>Cards</span><span>Netbanking</span><span>Wallets</span>
           </div>
-          <span class="hint">Please choose one.</span>
-        </fieldset>
+          <p class="pay-secure">Payments handled by <b>Razorpay</b>. We never see your card or UPI details.</p>
+          <p class="pay-error" id="payError"></p>
+          <button type="button" class="pay-later" id="payLaterBtn">I'll pay at the venue instead</button>
+        </div>
+
+        <div class="pay-state" id="payState">
+          <div class="mark" id="payStateMark">✓</div>
+          <div>
+            <h3 id="payStateTitle">Payment received</h3>
+            <p id="payStateNote"></p>
+            <button type="button" class="redo" id="payRedo">Pay online now</button>
+          </div>
+        </div>
       </div>
 
       <!-- STEP 4 -->
@@ -437,14 +502,26 @@ fieldset.bad .hint{display:block}
     city:    'entry.838219199',
     source:  'entry.1102715980',
     before:  'entry.60262619',
-    email:   ''   /* ← paste the Email question's entry ID here */
+    email:     '',  /* ← paste the Email question's entry ID here */
+    paymentId: ''   /* ← optional: add a "Payment ID" question and paste it here */
   };
+
+  /* ============================================================
+     RAZORPAY
+
+     The ₹299 amount and the payment check both live on the
+     server (/api/order and /api/verify) — this page never
+     handles the key secret, and a paid state it did not earn
+     cannot be faked.
+     ============================================================ */
+  var ORDER_URL  = '/api/order';
+  var VERIFY_URL = '/api/verify';
 
   var COPY = [
     null,
     { t: 'Your details',  s: "So we know who's walking with us on the day." },
     { t: 'Your pet',      s: 'The star of the parade. Tell us about them.' },
-    { t: 'Payment',       s: 'Confirm your ₹299 parade pass.' },
+    { t: 'Payment',       s: 'Pay ₹299 for your parade pass.' },
     { t: 'Almost done',   s: 'Two optional questions, then you\'re in.' }
   ];
 
@@ -521,9 +598,172 @@ fieldset.bad .hint{display:block}
       if (!picked) { ok = false; if (!firstBad) firstBad = fs; }
     });
 
+    /* step 3 — they must have paid, or have chosen to pay at the venue */
+    if (n === 3 && !paidField.value) {
+      showPayError('Please pay ₹299 to hold your spot, or choose to pay at the venue.');
+      ok = false;
+    }
+
     if (firstBad) firstBad.focus ? firstBad.focus() : firstBad.scrollIntoView({ block: 'center' });
     return ok;
   }
+
+  /* ---------- payment ---------- */
+  var payBlock   = document.getElementById('payBlock');
+  var payBtn     = document.getElementById('payBtn');
+  var payLabel   = document.getElementById('payLabel');
+  var payLaterBtn= document.getElementById('payLaterBtn');
+  var payError   = document.getElementById('payError');
+  var payState   = document.getElementById('payState');
+  var payStateMark  = document.getElementById('payStateMark');
+  var payStateTitle = document.getElementById('payStateTitle');
+  var payStateNote  = document.getElementById('payStateNote');
+  var payRedo    = document.getElementById('payRedo');
+  var paidField  = document.getElementById('paidField');
+  var payIdField = document.getElementById('paymentIdField');
+
+  function showPayError(msg) {
+    payError.textContent = msg;
+    payError.classList.add('on');
+  }
+  function clearPayError() {
+    payError.classList.remove('on');
+  }
+
+  function busy(on, label) {
+    payBtn.classList.toggle('loading', on);
+    payBtn.disabled = on;
+    payLaterBtn.disabled = on;
+    payLabel.textContent = on ? (label || 'Opening payment…') : 'Pay ₹299 securely';
+  }
+
+  function markPaid(paymentId) {
+    paidField.value = 'Yes';
+    payIdField.value = paymentId;
+    payBlock.style.display = 'none';
+    payState.className = 'pay-state on paid';
+    payStateMark.textContent = '✓';
+    payStateTitle.textContent = 'Payment received — ₹299';
+    payStateNote.innerHTML = 'Your spot is held. Payment ID <code>' + paymentId + '</code>';
+    payRedo.style.display = 'none';
+  }
+
+  function markLater() {
+    paidField.value = 'Not yet';
+    payIdField.value = '';
+    payBlock.style.display = 'none';
+    payState.className = 'pay-state on later';
+    payStateMark.textContent = '₹';
+    payStateTitle.textContent = 'Paying at the venue';
+    payStateNote.textContent = 'Carry ₹299 on the day. Spots are confirmed on a first-come basis, so paying now is safer.';
+    payRedo.style.display = '';
+  }
+
+  function resetPay() {
+    paidField.value = '';
+    payIdField.value = '';
+    payState.className = 'pay-state';
+    payBlock.style.display = '';
+    busy(false);
+    clearPayError();
+  }
+
+  payLaterBtn.addEventListener('click', function () { clearPayError(); markLater(); });
+  payRedo.addEventListener('click', function () { resetPay(); payBtn.click(); });
+
+  payBtn.addEventListener('click', function () {
+    clearPayError();
+
+    if (typeof Razorpay === 'undefined') {
+      showPayError('Could not load the payment window. Check your connection and try again.');
+      return;
+    }
+
+    var d = collect();
+    busy(true, 'Starting…');
+
+    fetch(ORDER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: d.name, email: d.email, mobile: d.mobile, city: d.city,
+        petName: d.petName, breed: d.breed, size: d.size
+      })
+    })
+      .then(function (r) {
+        /* a 404 HTML page is not JSON — say something a human can act on */
+        return r.text().then(function (t) {
+          var j = null;
+          try { j = JSON.parse(t); } catch (e) { j = null; }
+          if (!j) throw new Error('Online payment is not switched on yet. Please pay at the venue for now.');
+          if (!r.ok) throw new Error(j.error || 'Could not start the payment.');
+          return j;
+        });
+      })
+      .then(function (order) {
+        busy(false);
+
+        var rzp = new Razorpay({
+          key: order.keyId,
+          amount: order.amount,
+          currency: order.currency,
+          order_id: order.orderId,
+          name: "Dog's World India",
+          description: 'Independence Day Pet Parade 2026 — parade pass',
+          image: 'assets/logo.png',
+          prefill: { name: d.name, email: d.email, contact: d.mobile },
+          notes: { pet: d.petName, tshirt: d.size },
+          theme: { color: '#F0390B' },
+          modal: {
+            ondismiss: function () {
+              busy(false);
+              showPayError('Payment cancelled. You can try again, or pay at the venue.');
+            }
+          },
+          handler: function (resp) {
+            busy(true, 'Confirming…');
+            fetch(VERIFY_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(resp)
+            })
+              .then(function (r) { return r.json(); })
+              .then(function (out) {
+                busy(false);
+                if (out && out.valid) {
+                  markPaid(resp.razorpay_payment_id);
+                } else {
+                  /* money may well have left their account — never
+                     tell them it failed, tell them we'll check. */
+                  showPayError('We could not confirm the payment automatically. Note your payment ID ' +
+                               resp.razorpay_payment_id + ' and continue — we will verify it manually.');
+                  paidField.value = 'Yes';
+                  payIdField.value = resp.razorpay_payment_id;
+                }
+              })
+              .catch(function () {
+                busy(false);
+                showPayError('Payment went through but confirmation failed. Note your payment ID ' +
+                             resp.razorpay_payment_id + ' and continue.');
+                paidField.value = 'Yes';
+                payIdField.value = resp.razorpay_payment_id;
+              });
+          }
+        });
+
+        rzp.on('payment.failed', function (e) {
+          busy(false);
+          var msg = (e && e.error && e.error.description) || 'The payment did not go through.';
+          showPayError(msg + ' Please try again.');
+        });
+
+        rzp.open();
+      })
+      .catch(function (err) {
+        busy(false);
+        showPayError(err.message || 'Could not start the payment. Please try again.');
+      });
+  });
 
   /* clear the error state as soon as they start fixing it */
   form.addEventListener('input', function (e) {
@@ -538,11 +778,12 @@ fieldset.bad .hint{display:block}
   /* ---------- data ---------- */
   function collect() {
     var d = {};
-    ['name', 'email', 'mobile', 'city', 'petName', 'breed', 'source', 'before'].forEach(function (k) {
+    ['name', 'email', 'mobile', 'city', 'petName', 'breed', 'source', 'before',
+     'paid', 'paymentId'].forEach(function (k) {
       var el = form.elements[k];
       d[k] = el ? el.value.trim() : '';
     });
-    ['size', 'paid'].forEach(function (k) {
+    ['size'].forEach(function (k) {
       var el = form.querySelector('input[name="' + k + '"]:checked');
       d[k] = el ? el.value : '';
     });
@@ -563,16 +804,16 @@ fieldset.bad .hint{display:block}
       ['Pet', d.petName + (d.breed ? ' · ' + d.breed : '')],
       ['T-shirt', d.size],
       ['Mobile', d.mobile],
-      ['Payment', d.paid],
-      ['Amount', '₹299']
+      ['Payment', d.paid === 'Yes' ? 'Paid · ₹299' : 'At the venue · ₹299']
     ];
+    if (d.paymentId) rows.push(['Payment ID', d.paymentId]);
     document.getElementById('receipt').innerHTML = rows.map(function (r) {
       return '<div><dt>' + r[0] + '</dt><dd>' + (r[1] || '—') + '</dd></div>';
     }).join('');
 
     document.getElementById('doneNote').textContent = d.paid === 'Yes'
-      ? "We'll send the parade details to " + d.mobile + " closer to the day."
-      : "Payment isn't done yet — we'll message you on " + d.mobile + " with the payment link to confirm your spot.";
+      ? "Payment received. We'll send the parade details to " + d.mobile + " closer to the day."
+      : "Carry ₹299 on the day — we'll message you on " + d.mobile + " with the details.";
   }
 
   /* ---------- navigation ---------- */
