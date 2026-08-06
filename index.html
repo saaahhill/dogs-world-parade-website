@@ -22,6 +22,11 @@
   --blue:#1B4FC4;
   --blue-soft:#EEF3FF;
   --green:#128A3E;
+  /* the flag's own colours, as specified for the Tiranga */
+  --flag-saffron:#FF9933;
+  --flag-white:#FFFFFF;
+  --flag-green:#138808;
+  --flag-chakra:#000080;
   --ink:#0D1B33;
   --muted:#5C6B85;
   --line:#E9EDF5;
@@ -119,12 +124,27 @@ h1{
 }
 h1 .stack{display:block;width:max-content;max-width:100%;margin-inline:auto}
 h1 .word{
-  background:linear-gradient(100deg,var(--orange) 0%,var(--orange) 45%,var(--blue) 100%);
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--orange);
+  background:linear-gradient(95deg,
+    var(--flag-saffron) 0%,
+    var(--flag-saffron) 40%,
+    var(--flag-white) 50%,
+    var(--flag-green) 60%,
+    var(--flag-green) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  color:var(--flag-saffron);
+  /* pure white on a white page is invisible, so the glyphs get a
+     thin dark outline — the flag colours stay exact, the middle
+     letters stay readable */
+  filter:
+    drop-shadow(1px 0 0 rgba(13,27,51,.42))
+    drop-shadow(-1px 0 0 rgba(13,27,51,.42))
+    drop-shadow(0 1px 0 rgba(13,27,51,.42))
+    drop-shadow(0 -1px 0 rgba(13,27,51,.42))
+    drop-shadow(0 3px 8px rgba(13,27,51,.18));
 }
 h1 .underline{
   display:block;height:clamp(6px,.75vw,11px);border-radius:11px;margin-top:.2rem;
-  background:linear-gradient(90deg,var(--orange),#fff 50%,var(--green));
+  background:linear-gradient(90deg,var(--flag-saffron),var(--flag-white) 50%,var(--flag-green));
   border:1px solid var(--line);transform:scaleX(0);transform-origin:left;
   animation:draw 1.1s .45s var(--ease) forwards;
 }
@@ -480,11 +500,6 @@ h2{font-size:clamp(1.65rem,4vw,3.2rem);font-weight:800;letter-spacing:-.025em;li
           <li>Independence Day balloons</li>
           <li>Professional dog show</li>
         </ul>
-      </details>
-
-      <details class="reveal">
-        <summary>Tell me about the professional dog show</summary>
-        <p>A judged dog show runs alongside the day's activities — open to every registered pet, no separate entry fee. Categories and timings are announced at the venue.</p>
       </details>
 
       <details class="reveal">
