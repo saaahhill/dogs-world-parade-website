@@ -491,6 +491,54 @@ fieldset.bad .hint{display:block}
 
   var AMOUNT_TEXT = '₹299';
 
+  /* ============================================================
+     REGISTRATIONS SHEET
+
+     WhatsApp alone loses anyone who fills the form and then never
+     presses send. So every completed form is also posted to a
+     Google Sheet: once when they reach the WhatsApp step, and
+     again — updating the same row — when they actually open the
+     chat. The Status column tells the two apart.
+
+     Paste the Apps Script /exec URL here (see sheet/Code.gs and
+     the README). Left blank, the page simply doesn't log, and
+     nothing else changes.
+     ============================================================ */
+  var SHEET_URL = '';
+
+  var regId = 'reg_' + Date.now().toString(36) + '_' +
+              Math.random().toString(36).slice(2, 7);
+
+  function logToSheet(status) {
+    if (!SHEET_URL) return;
+
+    var d = collect();
+    d.status = status;
+    d.regId  = regId;
+
+    var payload = JSON.stringify(d);
+
+    /* sendBeacon survives the page navigating off to WhatsApp,
+       which a normal fetch does not reliably do. text/plain keeps
+       it a simple request, so Apps Script answers without CORS. */
+    try {
+      if (navigator.sendBeacon) {
+        var blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' });
+        if (navigator.sendBeacon(SHEET_URL, blob)) return;
+      }
+    } catch (e) { /* fall through */ }
+
+    try {
+      fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        keepalive: true,
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: payload
+      });
+    } catch (e) { /* logging must never block a registration */ }
+  }
+
   var COPY = [
     null,
     { t: 'Your details',  s: "So we know who's walking with us on the day." },
@@ -643,6 +691,7 @@ fieldset.bad .hint{display:block}
 
   waBtn.addEventListener('click', function () {
     clearPayError();
+    logToSheet('Opened WhatsApp');
     /* the link opens the chat on its own; we only move our own UI on */
     setTimeout(markSent, 400);
   });
@@ -653,6 +702,7 @@ fieldset.bad .hint{display:block}
   });
 
   copyMsgBtn.addEventListener('click', function () {
+    logToSheet('Copied message');
     var text = buildMessage(collect()) + '\n\n(' + WA_SHOWN + ')';
     var done = function () {
       copyMsgBtn.textContent = 'Copied — paste it to ' + WA_SHOWN;
@@ -717,7 +767,10 @@ fieldset.bad .hint{display:block}
 
     if (step < TOTAL) {
       step++;
-      if (step === 3) refreshWa();   /* message must match the latest answers */
+      if (step === 3) {
+        refreshWa();                 /* message must match the latest answers */
+        logToSheet('Filled form');   /* have them even if they never press send */
+      }
       showPane(step);
       return;
     }
